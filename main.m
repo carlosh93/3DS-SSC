@@ -1,5 +1,10 @@
 %--------------------------------------------------------------------------
-% Copyright @ Carlos Hinojosa, 2018
+% Copyright @ Carlos Hinojosa, 2021
+% Matlab Implementation code of the SPIE JARS paper:
+% "Hyperspectral image segmentation using 3D regularized subspace
+% clustering model" DOI: https://doi.org/10.1117/1.JRS.15.016508
+% 
+% Webpage: https://carloshinojosa.me/
 %--------------------------------------------------------------------------
 %% Clear Screen and Workspace
 clear all
@@ -13,14 +18,14 @@ verbose = true;
 % 2:    GPU Double
 % 3:    CPU
 
-arch = 1;
+arch = 3;
 
 %% Add Hyperspectral databases and auxiliary codes to the path
 addpath('Data/')
 addpath('./Auxiliary Files/');
 %% Select and load the database
-Fname =  'SalinasA';%'Indian_subset';
-database = 'SalinasA';%'Indian_subset';
+Fname =  'Indian_subset'; %'Indian_subset' | 'SalinasA' | 'paviaU_subset2';
+database = 'Indian_subset';%'Indian_subset' | 'paviaU_subset2' | 'SalinasA'
 fprintf(['Experiment start at: ',datestr(datetime('now')),'\n'])
 fprintf('=======================================================\n');
 fprintf('Loading hyperspectral datacue and preparing data \n');
@@ -37,21 +42,13 @@ switch(Fname)
         alpha1V = 1400;%200:100:500;
         alpha2V = 300;%800:100:1200;
         
-        
-    case 'zurich'
-        hyperimg = double(IMe(511:660,395:544,:));
-        hyperimg_gt = GT(511:660,395:544);%GT(421:670,401:650);
-        clear IMe GT
-        
-    case 'paviaU_subset3'
-        alpha1V = 300;%200:100:500;
-        alpha2V = 1100;%800:100:1200;
+    case 'paviaU_subset2'
+        hyperimg = paviaU;
+        hyperimg_gt = paviaU_gt;
+        alpha1V = 300;
+        alpha2V = 1100;
         rho = 0.7;
-    
-    case 'pavia6'
-        alpha1V = 300;%200:100:500;
-        alpha2V = 1100;%800:100:1200;
-        rho = 0.7;
+        clear paviaU paviaU_gt
         
     case 'SalinasA'
         hyperimg = salinasA_corrected(:,1:83,:);
@@ -72,35 +69,23 @@ s = fix_labels(s);
 Xfull=reshape(hyperimg,Mc*Nc,L);
 Xfull=Xfull';
 
-%% Normalization
-%Xfull = Xfull - mean(Xfull(:));
-%Xfull = Xfull./std(Xfull(:));
-
 %% Sparse Subspace Clustering parameters
 
 l =  length(unique(s))-1;
 
-% Original SSC parameters
-%alpha = [1100,300];
 r = 0; % data projection
 affine = true; % affine constraint
 outlier = false; % data has outlier
 
 la =[]; % sparsity/noise tradeoff
 
-
-
-%% Compressive Spectral Imaging (CSI) acquisition
-fprintf('Acquiring compressed measurements \n');
-fprintf('=======================================================\n');
+%% Hyperparameters tunning
 
 %kernel size
-ksV = [0.5,1.5,3,4,6,8]; %3.1:0.1:4;%[3,4,6,8];
+ksV = [3,4,6,8];
 % Spatial information regularization parameter
+alphassV = 600:100:1000;
 
-alphassV = 600:100:1000;%[0.13 1.3 13 100:200:3000];
-
-%% Compressed Sparse Subspace Clustering With Spatial Regularizer
 for alpha1 = alpha1V
     for alpha2 = alpha2V
         for alphass = alphassV
@@ -109,22 +94,19 @@ for alpha1 = alpha1V
                 alpha = [alpha1,alpha2];
                 [results,C,img] = CSI_SSC(Xfull,r,affine,alpha,ks,outlier,rho,s,l,la,alphass,Mc,Nc,Fname,arch);
                 
-                % % Recolecting results
+                % Recolecting results
                 parameters = {C,l,alpha,rho,alphass,ks};
-                % parameters.cube_size = [Mc,Nc,L];
-                % results.C = C;
-                % results.parameters = parameters;
-                %
-                % fprintf(['Experiment ends at: ',datestr(datetime('now')),'\n'])
-                % fprintf('=======================================================\n');
+                parameters.cube_size = [Mc,Nc,L];
                 
                 fprintf(['alphass: ',num2str(alphass),' OA: ',num2str(results.acc_o),'\n']);
                 %% Save Results
-                save(['Results/3D_Reg_OSA_new/',database,'/',database,'_alpha1=',num2str(alpha1),'_alpha2=',num2str(alpha2)...
+                dir_save_name = ['Results/',database,'/'];
+                if ~exist(dir_save_name, 'dir')
+                    mkdir(dir_save_name)
+                end
+                save([dir_save_name,database,'_alpha1=',num2str(alpha1),'_alpha2=',num2str(alpha2)...
                     ,'_ks=',num2str(ks),'_alphass=',num2str(alphass),'.mat'],'results','parameters');
             end
         end
     end
 end
-
-%900, 0.5
