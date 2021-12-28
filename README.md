@@ -1,4 +1,4 @@
-# Sparse Subspace Clustering with 3D Regularization for Spectral Image Land Cover Segmentation
+# Hyperspectral image segmentation using 3D regularized subspace clustering model
 
 
 ## Abstract
