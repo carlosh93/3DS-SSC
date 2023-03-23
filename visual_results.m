@@ -14,9 +14,9 @@ addpath('Auxiliary Files/subaxis/');
 % Fname = 'Indian_subset';
 % Fname = 'SalinasA';
 % Fname = 'zurich';
-Fname = 'pavia6';
+% Fname = 'pavia6';
 % Fname = 'Indian_Full';
-% Fname = 'Indian_subset';
+Fname = 'Indian_subset';
 
 load(Fname);
 
@@ -98,12 +98,12 @@ switch(Fname)
         result1 = results; clear results parameters;
         
         %S-SSC
-        load('Compare Methods/S4C_old_2D/Results/3D_Reg_OSA/best_Indian_subset_Result.mat');
+        load('Compare Methods/S-SSC/best_Indian_subset_Result.mat');
         result2 = results; clear results bestFnameNMI bestFnameOA Fname;
         
         %TV-SSC
-        load('Compare Methods/TV KSSC-SMP/Results/3D_Reg_OSA/best_Indian_subset_Result.mat');
-        result3 = results; clear results bestFnameNMI bestFnameOA Fname;
+%         load('Compare Methods/TV KSSC-SMP/Results/3D_Reg_OSA/best_Indian_subset_Result.mat');
+%         result3 = results; clear results bestFnameNMI bestFnameOA Fname;
         
         %ESC-FFS
         load('Compare Methods/ESC-FFS/best_Indian_subset_Result.mat');
@@ -117,14 +117,14 @@ switch(Fname)
         
         
         %proposed 3DS-SSC
-        load('Results/3D_Reg_OSA/best_Indian_subset_Result.mat')
+        load('Results/best_Indian_subset_Result.mat')
         result6 = results; clear bestFnameNMI bestFnameOA Fname results;
         
         sptitle = 'Indian Pines ROI Results';
         
         titleR1 = ['SSC, ','OA: ',num2str(result1.acc_o*100,4),'%'];
         titleR2 = ['S-SSC, ','OA: ',num2str(result2.acc_o*100,4),'%'];
-        titleR3 = ['TV-KSSC-SMP, ','OA: ',num2str(result3.acc_o*100,4),'%'];
+%         titleR3 = ['TV-KSSC-SMP, ','OA: ',num2str(result3.acc_o*100,4),'%'];
         titleR4 = ['ESC-FFS, ','OA: ',num2str(result4.acc_o*100,4),'%'];
         titleR5 = ['SR-SSC, ','OA: ',num2str(result5.acc_o*100,4),'%'];
         titleR6 = ['3DS-SSC, ','OA: ',num2str(result6.acc_o*100,4),'%'];
@@ -185,7 +185,7 @@ end
 
 % Ground-Truth
 
-subaxis(1,7,1,'SpacingHorizontal',0.05);
+subaxis(1,6,1,'SpacingHorizontal',0.05);
 image(reshape(labels,[Mc Nc])); colormap(cmp); %axis image; axis off;
 
 axis off
@@ -210,18 +210,18 @@ axis off
 title(titleR2);
 
 % TV-KSSC-SMP
-method3_results = reshape(result3.groups,[Mc Nc]);
-method3_results(labels==1)=1;
-subaxis(1,7,4);
-image(method3_results); colormap(cmp)
-axis off
-title(titleR3);
+% method3_results = reshape(result3.groups,[Mc Nc]);
+% method3_results(labels==1)=1;
+% subaxis(1,7,4);
+% image(method3_results); colormap(cmp)
+% axis off
+% title(titleR3);
 
 
 % ESC
 method4_results = reshape(result4.groups,[Mc Nc]);
 method4_results(labels==1)=1;
-subaxis(1,7,5);
+subaxis(1,7,4);
 image(method4_results); colormap(cmp)
 axis off
 title(titleR4);
@@ -230,7 +230,7 @@ title(titleR4);
 % SR-SSC
 method5_results = reshape(result5.groups,[Mc Nc]);
 method5_results(labels==1)=1;
-subaxis(1,7,6);
+subaxis(1,7,5);
 image(method5_results); colormap(cmp)
 axis off
 title(titleR5);
@@ -238,9 +238,7 @@ title(titleR5);
 % Proposed
 prop_results = reshape(result6.groups,[Mc Nc]);
 prop_results(labels==1)=1;
-subaxis(1,7,7);
+subaxis(1,7,6);
 image(prop_results); colormap(cmp)
 axis off
 title(titleR6);
-
-suptitle(sptitle)
